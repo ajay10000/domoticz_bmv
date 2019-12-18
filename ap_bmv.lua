@@ -20,7 +20,9 @@ function parseJsonToDomoticz()
 
   for k, v in pairs(arr) do
     val = domoticz_applyJsonPath(strJson,v[2])
-    if not isBlank(val) then
+    --print(k)
+    --print(val)
+    if not (val == 'ERROR') then
       --print(k..": "..val) --debug
       -- command format: domoticz_updateDevice(Domoticz ID,'',BMV value * BMV multiplier)
       domoticz_updateDevice(v[1],'',val * v[3])
@@ -35,7 +37,7 @@ end
 
 function isBlank(x)
   --tests for "blank" string - either empty, nil, or just spaces/tabs/newlines.
-  if x == nil or x == '' then
+  if x == nil or (x == '') then
     return True
   else
     return not not tostring(x):find("^%s*$")
