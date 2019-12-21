@@ -20,28 +20,19 @@ function parseJsonToDomoticz()
 
   for k, v in pairs(arr) do
     val = domoticz_applyJsonPath(strJson,v[2])
-    --print(k)
-    --print(val)
-    if not (val == 'ERROR') then
-      --print(k..": "..val) --debug
+    --print(k..": ", val) --debug
+    if (val ~= 'ERROR') and (val ~= nil) then
       -- command format: domoticz_updateDevice(Domoticz ID,'',BMV value * BMV multiplier)
       domoticz_updateDevice(v[1],'',val * v[3])
+    else
+      print("ERROR: ", val)
     end
   end
   
 end
 
 function errorhandler(err)
-   print("ERROR:", err)
-end
-
-function isBlank(x)
-  --tests for "blank" string - either empty, nil, or just spaces/tabs/newlines.
-  if x == nil or (x == '') then
-    return True
-  else
-    return not not tostring(x):find("^%s*$")
-  end
+   print("ERROR: ", err)
 end
 
 status = xpcall(parseJsonToDomoticz, errorhandler)
