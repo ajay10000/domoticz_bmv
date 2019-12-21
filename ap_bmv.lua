@@ -3,15 +3,19 @@
 --called by url generated in python script vedirect_json.py 
 --example: http://domoticz_domain_orIP#:port#/json.htm?type=command&param=udevices&script=ap_bmv.lua&data={"H2":0,"H3":0,"Alarm":"OFF","H7":46666,"V":54645,"FW":307,"H10":14,"H4":0,"H8":60004,"H11":0,"H12":0,"SOC":1000,"H1":-170364,"AR":0,"BMV":700,"CE":0,"P":29,"Relay":"OFF","I":530,"PID":"0x203","TTG":-1,"H9":0,"H17":26572,"H5":0,"H18":41698,"H6":-7695869}
 
-function parseJsonToDomoticz()
+local function isempty(s)
+  return s == nil or s == ''
+end
+
+local function parseJsonToDomoticz()
   -- 2D array with format name={Domoticz id,BMV-702 key,BMV multiplier}
   arr = {
   voltage = {60,'.V',0.001};
   current = {61,'.I',0.001};
   power = {62,'.P',1};
   soc = {63,'.SOC',0.1};
-  kwhr_in = {64,'.H18',0.01};
-  kwhr_out = {65,'.H17',0.01};
+  kwhr_in = {194,'.H18',0.01};
+  kwhr_out = {195,'.H17',0.01};
   ahr = {66,'.CE',0.001}}
   
   -- Retrieve the json string
@@ -21,17 +25,19 @@ function parseJsonToDomoticz()
   for k, v in pairs(arr) do
     val = domoticz_applyJsonPath(strJson,v[2])
     --print(k..": ", val) --debug
-    if (val ~= 'ERROR') and (val ~= nil) then
+    if not isempty(val) then
+      -- isempty(val) happens when the item (k) is not included in the JSON array coming from the python script
+      -- At random times, the BMV sends all 'H' values or all 'non H' values (see Label and Units below)
       -- command format: domoticz_updateDevice(Domoticz ID,'',BMV value * BMV multiplier)
       domoticz_updateDevice(v[1],'',val * v[3])
     else
-      print("ERROR: ", val)
+      --print("ERROR: nil or empty value for index "..v[1]) --debug
+      --print(strJson) --debug
     end
   end
-  
 end
 
-function errorhandler(err)
+local function errorhandler(err)
    print("ERROR: ", err)
 end
 
